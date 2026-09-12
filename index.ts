@@ -66,6 +66,13 @@ function getApiKey(): string {
 }
 
 const DEFAULT_MAX_SECONDS = 30;
+const DEFAULT_VOLUME = 0.5;
+
+/** afplay -v に渡す再生音量。範囲外・不正値は既定値に落とす。 */
+function playbackVolume(value?: string): number {
+  const parsed = value === undefined ? Number.NaN : Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : DEFAULT_VOLUME;
+}
 
 function sayFallback(message: string): void {
   Bun.spawnSync([SYSTEM_SAY_BIN, message], { stderr: "pipe" });
@@ -127,7 +134,7 @@ async function speak(text: string): Promise<void> {
   const outPath = join(tmpdir(), `say-hook-${Date.now()}.mp3`);
   await writeFile(outPath, audioBuffer);
 
-  const proc = Bun.spawn([AFPLAY_BIN, outPath], { stdout: "pipe", stderr: "pipe" });
+  const proc = Bun.spawn([AFPLAY_BIN, "-v", String(playbackVolume(process.env.SAY_VOLUME)), outPath], { stdout: "pipe", stderr: "pipe" });
   const timer = setTimeout(() => proc.kill(), maxSeconds * 1000);
   try {
     await proc.exited;
