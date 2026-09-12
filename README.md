@@ -31,6 +31,10 @@ Optional environment variables:
 | `ELEVENLABS_SPEED` | Speech speed multiplier (default: `1.3`) |
 | `SAY_MAX_CHARS` | Max characters sent to TTS (default and hard limit: `200`) |
 | `SAY_MAX_SECONDS` | Max playback duration in seconds (default: `30`) |
+| `SAY_VOLUME` | Playback volume, `0.0`–`1.0` (default: `0.5`) |
+
+`SAY_VOLUME` applies to the ElevenLabs playback (`afplay`). The system
+`say` fallback follows the macOS output volume instead.
 
 The Stop hook speaks through the first `.`, `,`, or `。`, including that
 delimiter, and never exceeds `SAY_MAX_CHARS`.
