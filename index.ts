@@ -66,7 +66,7 @@ function getApiKey(): string {
 }
 
 const DEFAULT_MAX_SECONDS = 30;
-const DEFAULT_VOLUME = 0.5;
+const DEFAULT_VOLUME = 0.25;
 
 /** afplay -v に渡す再生音量。範囲外・不正値は既定値に落とす。 */
 function playbackVolume(value?: string): number {
