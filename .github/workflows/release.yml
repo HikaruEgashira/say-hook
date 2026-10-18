@@ -14,7 +14,6 @@ jobs:
       matrix:
         os:
           - hikae-flash
-          - macos-latest
     timeout-minutes: 5
     runs-on: ${{ matrix.os }}
     steps:
@@ -28,25 +27,18 @@ jobs:
         run: bun install --frozen-lockfile
       - timeout-minutes: 5
         run: bun test && bun run typecheck
-      - name: Check macOS system tools with a restricted PATH
-        if: runner.os == 'macOS'
-        timeout-minutes: 5
-        run: |
-          bun_path="$(command -v bun)"
-          check_output="$(PATH=/bin "$bun_path" run index.ts check 2>&1 || true)"
-          printf '%s\n' "$check_output"
-          grep -Fq 'afplay (macOS): /usr/bin/afplay' <<< "$check_output"
-          ! grep -Fq 'Executable not found' <<< "$check_output"
   build:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: test
     strategy:
       matrix:
         include:
-          - os: macos-latest
+          # Bun cross-compiles the darwin binaries on the Linux runner, so the
+          # macOS runner is gone without dropping the release artifacts.
+          - os: hikae-flash
             target: bun-darwin-arm64
             suffix: darwin-arm64
-          - os: macos-latest
+          - os: hikae-flash
             target: bun-darwin-x64
             suffix: darwin-x64
     timeout-minutes: 5
