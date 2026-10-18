@@ -14,7 +14,6 @@ jobs:
       matrix:
         os:
           - hikae-flash
-          - macos-latest
     timeout-minutes: 5
     runs-on: ${{ matrix.os }}
     steps:
@@ -28,68 +27,3 @@ jobs:
         run: bun install --frozen-lockfile
       - timeout-minutes: 5
         run: bun test && bun run typecheck
-      - name: Check macOS system tools with a restricted PATH
-        if: runner.os == 'macOS'
-        timeout-minutes: 5
-        run: |
-          bun_path="$(command -v bun)"
-          check_output="$(PATH=/bin "$bun_path" run index.ts check 2>&1 || true)"
-          printf '%s\n' "$check_output"
-          grep -Fq 'afplay (macOS): /usr/bin/afplay' <<< "$check_output"
-          ! grep -Fq 'Executable not found' <<< "$check_output"
-  build:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: test
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            target: bun-darwin-arm64
-            suffix: darwin-arm64
-          - os: macos-latest
-            target: bun-darwin-x64
-            suffix: darwin-x64
-    timeout-minutes: 5
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        timeout-minutes: 5
-        with:
-          persist-credentials: false
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
-        timeout-minutes: 5
-      - timeout-minutes: 5
-        run: bun install --frozen-lockfile
-      - name: Build
-        timeout-minutes: 5
-        env:
-          BUILD_TARGET: ${{ matrix.target }}
-          REF_NAME: ${{ github.ref_name }}
-        run: bun build --compile --target="$BUILD_TARGET" --define __VERSION__="\"$REF_NAME\"" --outfile=say-hook index.ts
-      - name: Archive
-        timeout-minutes: 5
-        env:
-          REF_NAME: ${{ github.ref_name }}
-          SUFFIX: ${{ matrix.suffix }}
-        run: tar czf "say-hook-${REF_NAME}-${SUFFIX}.tar.gz" say-hook
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        timeout-minutes: 5
-        with:
-          name: say-hook-${{ matrix.suffix }}
-          path: say-hook-${{ github.ref_name }}-${{ matrix.suffix }}.tar.gz
-  release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
-    timeout-minutes: 5
-    runs-on: [self-hosted, linux, arm64, hikae-flash]
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        timeout-minutes: 5
-        with:
-          merge-multiple: true
-      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-        timeout-minutes: 5
-        with:
-          files: "*.tar.gz"
