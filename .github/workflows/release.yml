@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os:
-          - hikae-2vcpu-ubuntu-2404-arm
+          - hikae-2vcpu-ubuntu-2404
     timeout-minutes: 5
     runs-on: ${{ matrix.os }}
     steps:
@@ -35,10 +35,10 @@ jobs:
         include:
           # Bun cross-compiles the darwin binaries on the Linux runner, so the
           # macOS runner is gone without dropping the release artifacts.
-          - os: hikae-2vcpu-ubuntu-2404-arm
+          - os: hikae-2vcpu-ubuntu-2404
             target: bun-darwin-arm64
             suffix: darwin-arm64
-          - os: hikae-2vcpu-ubuntu-2404-arm
+          - os: hikae-2vcpu-ubuntu-2404
             target: bun-darwin-x64
             suffix: darwin-x64
     timeout-minutes: 5
@@ -73,7 +73,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
     timeout-minutes: 5
-    runs-on: hikae-2vcpu-ubuntu-2404-arm
+    runs-on: hikae-2vcpu-ubuntu-2404
     permissions:
       contents: write
     steps:
